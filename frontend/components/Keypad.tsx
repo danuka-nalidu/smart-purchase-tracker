@@ -7,6 +7,7 @@ interface KeypadProps {
   onOperatorClick: (op: string) => void;
   onDecimalClick: () => void;
   onClear: () => void;
+  onBackspace: () => void;
   onEquals: () => void;
   isEqualsDisabled: boolean;
 }
@@ -16,6 +17,7 @@ export function Keypad({
   onOperatorClick,
   onDecimalClick,
   onClear,
+  onBackspace,
   onEquals,
   isEqualsDisabled,
 }: KeypadProps) {
@@ -124,24 +126,31 @@ export function Keypad({
         .
       </Button>
       <Button
+        onClick={onBackspace}
+        variant="outline"
+        className="h-20 text-2xl font-bold hover:bg-red-50"
+      >
+        ⌫
+      </Button>
+      <Button
         onClick={onClear}
         variant="destructive"
         className="h-20 text-2xl font-bold"
       >
         C
       </Button>
+
+      {/* Row 5 */}
       <Button
         onClick={() => onOperatorClick('+')}
-        className="h-20 text-2xl font-bold bg-orange-500 hover:bg-orange-600 text-white"
+        className="col-span-2 h-20 text-2xl font-bold bg-orange-500 hover:bg-orange-600 text-white"
       >
         +
       </Button>
-
-      {/* Row 5 - Equals (full width) */}
       <Button
         onClick={onEquals}
         disabled={isEqualsDisabled}
-        className="col-span-4 h-20 text-2xl font-bold bg-green-600 hover:bg-green-700 text-white disabled:bg-slate-300 disabled:cursor-not-allowed"
+        className="col-span-2 h-20 text-2xl font-bold bg-green-600 hover:bg-green-700 text-white disabled:bg-slate-300 disabled:cursor-not-allowed"
       >
         =
       </Button>
