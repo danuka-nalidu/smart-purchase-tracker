@@ -38,10 +38,8 @@ export function DailyList({ date, limit }: DailyListProps) {
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const formatter = new Intl.NumberFormat('en-LK', {
-    style: 'currency',
-    currency: 'LKR',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
   });
 
   if (calculations.length === 0) {

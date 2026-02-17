@@ -12,6 +12,11 @@ export default function HistoryPage() {
   const calculations = useCalculatorStore((s) => s.calculations);
   const deleteCalculation = useCalculatorStore((s) => s.deleteCalculation);
 
+  const formatter = new Intl.NumberFormat('en-LK', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+
   // Group calculations by date
   const groupedCalculations = calculations.reduce((acc, calc) => {
     if (!acc[calc.date]) {
@@ -102,7 +107,7 @@ export default function HistoryPage() {
                   <div className="text-right">
                     <p className="text-sm text-slate-500">Daily Total</p>
                     <p className="text-3xl font-bold text-green-600">
-                      ${dayTotal.toFixed(2)}
+                      {formatter.format(dayTotal)}
                     </p>
                   </div>
                 </div>
@@ -135,7 +140,7 @@ export default function HistoryPage() {
                         </div>
                         <div className="flex items-center gap-4">
                           <span className="text-2xl font-bold text-green-600 min-w-[100px] text-right">
-                            ${calc.result.toFixed(2)}
+                            {formatter.format(calc.result)}
                           </span>
                           <Button
                             variant="ghost"
