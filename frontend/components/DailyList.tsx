@@ -26,12 +26,14 @@ import { Card } from '@/components/ui/card';
 
 interface DailyListProps {
   date: string;
+  limit?: number;
 }
 
-export function DailyList({ date }: DailyListProps) {
-  const calculations = useCalculatorStore((s) =>
+export function DailyList({ date, limit }: DailyListProps) {
+  const allCalculations = useCalculatorStore((s) =>
     s.getCalculationsByDate(date)
   );
+  const calculations = limit ? allCalculations.slice(0, limit) : allCalculations;
   const deleteCalculation = useCalculatorStore((s) => s.deleteCalculation);
   const [deleteId, setDeleteId] = useState<string | null>(null);
 

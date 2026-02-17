@@ -65,9 +65,9 @@ export default function Home() {
         {/* Daily Calculations List */}
         <div className="mt-8">
           <h2 className="text-2xl font-bold text-slate-900 mb-4">
-            Calculations for Today
+            Recent Calculations
           </h2>
-          <DailyList date={selectedDate} />
+          <DailyList date={selectedDate} limit={5} />
         </div>
       </div>
     </main>
