@@ -61,6 +61,10 @@ export function Calculator({ selectedDate }: CalculatorProps) {
     setResult('0');
   };
 
+  const handleBackspace = () => {
+    setExpression((prev) => prev.slice(0, -1));
+  };
+
   const handleEquals = () => {
     if (!isValidExpression(expression)) return;
 
@@ -153,6 +157,7 @@ export function Calculator({ selectedDate }: CalculatorProps) {
         onOperatorClick={handleOperatorClick}
         onDecimalClick={handleDecimalClick}
         onClear={handleClear}
+        onBackspace={handleBackspace}
         onEquals={handleEquals}
         isEqualsDisabled={isEqualsDisabled}
       />
