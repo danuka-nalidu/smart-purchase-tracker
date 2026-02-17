@@ -6,6 +6,9 @@ import { DateSelector } from '@/components/DateSelector';
 import { Calculator } from '@/components/Calculator';
 import { DailySummary } from '@/components/DailySummary';
 import { DailyList } from '@/components/DailyList';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
+import { History } from 'lucide-react';
 
 export default function Home() {
   const [selectedDate, setSelectedDate] = useState<string>('');
@@ -27,12 +30,22 @@ export default function Home() {
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl md:text-5xl font-bold text-slate-900 text-balance">
-            Purchase Calculator
-          </h1>
-          <p className="text-slate-600 text-lg mt-2">
-            Track your daily business calculations
-          </p>
+          <div className="flex justify-between items-start mb-2">
+            <div>
+              <h1 className="text-4xl md:text-5xl font-bold text-slate-900 text-balance">
+                Purchase Calculator
+              </h1>
+              <p className="text-slate-600 text-lg mt-2">
+                Track your daily business calculations
+              </p>
+            </div>
+            <Link href="/history">
+              <Button size="lg" variant="outline" className="gap-2">
+                <History className="h-5 w-5" />
+                History
+              </Button>
+            </Link>
+          </div>
         </div>
 
         {/* Date Selector */}
