@@ -4,4 +4,5 @@ export interface DailyCalculation {
   result: number;
   date: string; // YYYY-MM-DD
   time: string; // HH:mm
+  isSpecial: boolean; // Multiple items purchased
 }
