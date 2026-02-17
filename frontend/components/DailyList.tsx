@@ -21,7 +21,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { useState } from 'react';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Star } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 
 interface DailyListProps {
@@ -56,6 +56,7 @@ export function DailyList({ date, limit }: DailyListProps) {
         <Table>
           <TableHeader>
             <TableRow className="bg-slate-100">
+              <TableHead className="w-12"></TableHead>
               <TableHead className="font-bold text-slate-900">Time</TableHead>
               <TableHead className="font-bold text-slate-900">Calculation</TableHead>
               <TableHead className="text-right font-bold text-slate-900">
@@ -68,7 +69,15 @@ export function DailyList({ date, limit }: DailyListProps) {
           </TableHeader>
           <TableBody>
             {calculations.map((calc) => (
-              <TableRow key={calc.id} className="hover:bg-slate-50">
+              <TableRow 
+                key={calc.id} 
+                className={calc.isSpecial ? "hover:bg-amber-50 bg-amber-50/50 border-l-4 border-amber-400" : "hover:bg-slate-50"}
+              >
+                <TableCell className="text-center">
+                  {calc.isSpecial && (
+                    <Star className="w-5 h-5 text-amber-500 fill-amber-500" />
+                  )}
+                </TableCell>
                 <TableCell className="font-medium">{calc.time}</TableCell>
                 <TableCell className="font-mono text-sm">{calc.expression}</TableCell>
                 <TableCell className="text-right font-bold text-slate-900">
@@ -93,13 +102,21 @@ export function DailyList({ date, limit }: DailyListProps) {
       {/* Mobile view */}
       <div className="md:hidden space-y-3">
         {calculations.map((calc) => (
-          <Card key={calc.id} className="p-4">
+          <Card 
+            key={calc.id} 
+            className={calc.isSpecial ? "p-4 bg-amber-50 border-amber-400 border-l-4" : "p-4"}
+          >
             <div className="space-y-2">
               <div className="flex justify-between items-start">
-                <div>
-                  <p className="text-sm font-medium text-slate-600">
-                    {calc.time}
-                  </p>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    {calc.isSpecial && (
+                      <Star className="w-4 h-4 text-amber-500 fill-amber-500 flex-shrink-0" />
+                    )}
+                    <p className="text-sm font-medium text-slate-600">
+                      {calc.time}
+                    </p>
+                  </div>
                   <p className="font-mono text-sm text-slate-900 mt-1">
                     {calc.expression}
                   </p>

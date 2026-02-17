@@ -5,6 +5,7 @@ import { Display } from './Display';
 import { Keypad } from './Keypad';
 import { useCalculatorStore } from '@/store/useCalculatorStore';
 import { toast } from 'sonner';
+import { isSpecialCustomer } from '@/lib/specialCustomer';
 
 interface CalculatorProps {
   selectedDate: string;
@@ -99,17 +100,26 @@ export function Calculator({ selectedDate }: CalculatorProps) {
       const minutes = String(now.getMinutes()).padStart(2, '0');
       const time = `${hours}:${minutes}`;
 
+      // Detect if this is a special customer (multiple items purchased)
+      const special = isSpecialCustomer(expression);
+
       addCalculation({
         id: generateId(),
         expression,
         result: roundedAnswer,
         date: selectedDate,
         time,
+        isSpecial: special,
       });
 
       setResult(String(roundedAnswer));
       setExpression('');
-      toast.success('Calculation saved!');
+      
+      if (special) {
+        toast.success('Special Customer! ⭐ Calculation saved!');
+      } else {
+        toast.success('Calculation saved!');
+      }
     } catch (error) {
       toast.error('Invalid calculation');
       setResult('0');

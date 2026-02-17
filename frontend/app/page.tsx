@@ -8,7 +8,7 @@ import { DailySummary } from '@/components/DailySummary';
 import { DailyList } from '@/components/DailyList';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { History } from 'lucide-react';
+import { History, Star } from 'lucide-react';
 
 export default function Home() {
   const [selectedDate, setSelectedDate] = useState<string>('');
@@ -30,7 +30,7 @@ export default function Home() {
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex justify-between items-start mb-2">
+          <div className="flex justify-between items-start gap-4 mb-2">
             <div>
               <h1 className="text-4xl md:text-5xl font-bold text-slate-900 text-balance">
                 Purchase Calculator
@@ -39,12 +39,20 @@ export default function Home() {
                 Track your daily business calculations
               </p>
             </div>
-            <Link href="/history">
-              <Button size="lg" variant="outline" className="gap-2">
-                <History className="h-5 w-5" />
-                History
-              </Button>
-            </Link>
+            <div className="flex gap-2">
+              <Link href="/special-customers">
+                <Button size="lg" variant="outline" className="gap-2 bg-amber-50 border-amber-300 hover:bg-amber-100">
+                  <Star className="h-5 w-5 text-amber-500" />
+                  <span className="hidden sm:inline">Special</span>
+                </Button>
+              </Link>
+              <Link href="/history">
+                <Button size="lg" variant="outline" className="gap-2">
+                  <History className="h-5 w-5" />
+                  <span className="hidden sm:inline">History</span>
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
 
