@@ -28,13 +28,18 @@ import { toast } from 'sonner';
 interface DailyListProps {
   date: string;
   limit?: number;
+  maxAmount?: number;
 }
 
-export function DailyList({ date, limit }: DailyListProps) {
+export function DailyList({ date, limit, maxAmount }: DailyListProps) {
   const allCalculations = useCalculatorStore((s) =>
     s.getCalculationsByDate(date)
   );
-  const calculations = limit ? allCalculations.slice(0, limit) : allCalculations;
+  // Filter by maxAmount if provided (public view hides > Rs.10,000 entries)
+  const filtered = maxAmount !== undefined
+    ? allCalculations.filter((c) => c.result <= maxAmount)
+    : allCalculations;
+  const calculations = limit ? filtered.slice(0, limit) : filtered;
   const deleteCalculation = useCalculatorStore((s) => s.deleteCalculation);
   const fetchByDate = useCalculatorStore((s) => s.fetchByDate);
   const [deleteId, setDeleteId] = useState<string | null>(null);
