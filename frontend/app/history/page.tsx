@@ -6,11 +6,19 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
 import { format, parseISO } from 'date-fns';
 import { ArrowLeft, Trash2, Calendar, Star } from 'lucide-react';
-import { DailyCalculation } from '@/types/calculation';
+import { Calculation } from '@/lib/api';
+import { useEffect } from 'react';
+import { toast } from 'sonner';
 
 export default function HistoryPage() {
   const calculations = useCalculatorStore((s) => s.calculations);
   const deleteCalculation = useCalculatorStore((s) => s.deleteCalculation);
+  const fetchAll = useCalculatorStore((s) => s.fetchAll);
+
+  // Load all calculations from the API on mount
+  useEffect(() => {
+    fetchAll();
+  }, [fetchAll]);
 
   const formatter = new Intl.NumberFormat('en-LK', {
     minimumFractionDigits: 2,
@@ -24,10 +32,10 @@ export default function HistoryPage() {
     }
     acc[calc.date].push(calc);
     return acc;
-  }, {} as Record<string, DailyCalculation[]>);
+  }, {} as Record<string, Calculation[]>);
 
   // Sort dates in descending order (newest first)
-  const sortedDates = Object.keys(groupedCalculations).sort((a, b) => 
+  const sortedDates = Object.keys(groupedCalculations).sort((a, b) =>
     b.localeCompare(a)
   );
 
@@ -42,6 +50,15 @@ export default function HistoryPage() {
 
   const getDayTotal = (date: string) => {
     return groupedCalculations[date].reduce((sum, calc) => sum + calc.result, 0);
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteCalculation(id);
+      toast.success('Calculation deleted');
+    } catch {
+      toast.error('Failed to delete. Please try again.');
+    }
   };
 
   return (
@@ -131,7 +148,7 @@ export default function HistoryPage() {
                     })
                     .map((calc) => (
                       <div
-                        key={calc.id}
+                        key={calc._id}
                         className={calc.isSpecial ? "flex items-center justify-between p-4 bg-amber-50 rounded-lg hover:bg-amber-100 transition-colors border-l-4 border-amber-400" : "flex items-center justify-between p-4 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors"}
                       >
                         <div className="flex-1">
@@ -154,7 +171,7 @@ export default function HistoryPage() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => deleteCalculation(calc.id)}
+                            onClick={() => handleDelete(calc._id)}
                             className="text-red-600 hover:text-red-700 hover:bg-red-50"
                           >
                             <Trash2 className="h-4 w-4" />

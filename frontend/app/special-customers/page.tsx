@@ -6,14 +6,22 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
 import { format, parseISO } from 'date-fns';
 import { ArrowLeft, Trash2, Star, Sparkles, History } from 'lucide-react';
-import { DailyCalculation } from '@/types/calculation';
+import { Calculation } from '@/lib/api';
+import { useEffect } from 'react';
+import { toast } from 'sonner';
 
 export default function SpecialCustomersPage() {
   const allCalculations = useCalculatorStore((s) => s.calculations);
   const deleteCalculation = useCalculatorStore((s) => s.deleteCalculation);
+  const fetchAll = useCalculatorStore((s) => s.fetchAll);
+
+  // Load all calculations from the API on mount
+  useEffect(() => {
+    fetchAll();
+  }, [fetchAll]);
 
   // Filter only special customers
-  const specialCalculations = allCalculations.filter(calc => calc.isSpecial);
+  const specialCalculations = allCalculations.filter((calc) => calc.isSpecial);
 
   const formatter = new Intl.NumberFormat('en-LK', {
     minimumFractionDigits: 2,
@@ -27,10 +35,10 @@ export default function SpecialCustomersPage() {
     }
     acc[calc.date].push(calc);
     return acc;
-  }, {} as Record<string, DailyCalculation[]>);
+  }, {} as Record<string, Calculation[]>);
 
   // Sort dates in descending order (newest first)
-  const sortedDates = Object.keys(groupedCalculations).sort((a, b) => 
+  const sortedDates = Object.keys(groupedCalculations).sort((a, b) =>
     b.localeCompare(a)
   );
 
@@ -49,6 +57,15 @@ export default function SpecialCustomersPage() {
 
   const getTotalAmount = () => {
     return specialCalculations.reduce((sum, calc) => sum + calc.result, 0);
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteCalculation(id);
+      toast.success('Calculation deleted');
+    } catch {
+      toast.error('Failed to delete. Please try again.');
+    }
   };
 
   return (
@@ -180,7 +197,7 @@ export default function SpecialCustomersPage() {
                     })
                     .map((calc) => (
                       <div
-                        key={calc.id}
+                        key={calc._id}
                         className="flex items-center justify-between p-4 bg-amber-50 rounded-lg hover:bg-amber-100 transition-colors border-l-4 border-amber-400"
                       >
                         <div className="flex-1">
@@ -201,7 +218,7 @@ export default function SpecialCustomersPage() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => deleteCalculation(calc.id)}
+                            onClick={() => handleDelete(calc._id)}
                             className="text-red-600 hover:text-red-700 hover:bg-red-50"
                           >
                             <Trash2 className="h-4 w-4" />
