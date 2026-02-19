@@ -20,9 +20,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Trash2, Star } from 'lucide-react';
 import { Card } from '@/components/ui/card';
+import { toast } from 'sonner';
 
 interface DailyListProps {
   date: string;
@@ -35,7 +36,13 @@ export function DailyList({ date, limit }: DailyListProps) {
   );
   const calculations = limit ? allCalculations.slice(0, limit) : allCalculations;
   const deleteCalculation = useCalculatorStore((s) => s.deleteCalculation);
+  const fetchByDate = useCalculatorStore((s) => s.fetchByDate);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+
+  // Load data from API when date changes
+  useEffect(() => {
+    fetchByDate(date);
+  }, [date, fetchByDate]);
 
   const formatter = new Intl.NumberFormat('en-LK', {
     minimumFractionDigits: 2,
@@ -69,8 +76,8 @@ export function DailyList({ date, limit }: DailyListProps) {
           </TableHeader>
           <TableBody>
             {calculations.map((calc) => (
-              <TableRow 
-                key={calc.id} 
+              <TableRow
+                key={calc._id}
                 className={calc.isSpecial ? "hover:bg-amber-50 bg-amber-50/50 border-l-4 border-amber-400" : "hover:bg-slate-50"}
               >
                 <TableCell className="text-center">
@@ -87,7 +94,7 @@ export function DailyList({ date, limit }: DailyListProps) {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => setDeleteId(calc.id)}
+                    onClick={() => setDeleteId(calc._id)}
                     className="hover:bg-red-50 text-red-600"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -102,8 +109,8 @@ export function DailyList({ date, limit }: DailyListProps) {
       {/* Mobile view */}
       <div className="md:hidden space-y-3">
         {calculations.map((calc) => (
-          <Card 
-            key={calc.id} 
+          <Card
+            key={calc._id}
             className={calc.isSpecial ? "p-4 bg-amber-50 border-amber-400 border-l-4" : "p-4"}
           >
             <div className="space-y-2">
@@ -124,7 +131,7 @@ export function DailyList({ date, limit }: DailyListProps) {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => setDeleteId(calc.id)}
+                  onClick={() => setDeleteId(calc._id)}
                   className="hover:bg-red-50 text-red-600"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -152,9 +159,14 @@ export function DailyList({ date, limit }: DailyListProps) {
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => {
+              onClick={async () => {
                 if (deleteId) {
-                  deleteCalculation(deleteId);
+                  try {
+                    await deleteCalculation(deleteId);
+                    toast.success('Calculation deleted');
+                  } catch {
+                    toast.error('Failed to delete. Please try again.');
+                  }
                   setDeleteId(null);
                 }
               }}

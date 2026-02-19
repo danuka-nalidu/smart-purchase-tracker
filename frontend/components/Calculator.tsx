@@ -10,9 +10,7 @@ interface CalculatorProps {
   selectedDate: string;
 }
 
-function generateId(): string {
-  return Math.random().toString(36).substring(2) + Date.now().toString(36);
-}
+
 
 export function Calculator({ selectedDate }: CalculatorProps) {
   const [expression, setExpression] = useState('');
@@ -121,7 +119,7 @@ export function Calculator({ selectedDate }: CalculatorProps) {
     toast.info(`Item added — Rs. ${answer.toLocaleString()}. Running total: Rs. ${newRunningTotal.toLocaleString()}`);
   };
 
-  const handleEquals = () => {
+  const handleEquals = async () => {
     if (!isValidExpression(expression)) return;
 
     const answer = evaluateExpression(expression);
@@ -143,37 +141,39 @@ export function Calculator({ selectedDate }: CalculatorProps) {
         ? `${accumulatedExpression} + ${expression}`
         : expression;
 
-      addCalculation({
-        id: generateId(),
-        expression: finalExpression,
-        result: finalTotal,
-        date: selectedDate,
-        time,
-        isSpecial: true,
-      });
-
-      setResult(String(finalTotal));
-      setExpression('');
-      setRunningTotal(0);
-      setAccumulatedExpression('');
-      setIsMultiItem(false);
-
-      toast.success(`Special Customer ⭐ — Total Rs. ${finalTotal.toLocaleString()} saved!`);
+      try {
+        await addCalculation({
+          expression: finalExpression,
+          result: finalTotal,
+          date: selectedDate,
+          time,
+          isSpecial: true,
+        });
+        setResult(String(finalTotal));
+        setExpression('');
+        setRunningTotal(0);
+        setAccumulatedExpression('');
+        setIsMultiItem(false);
+        toast.success(`Special Customer ⭐ — Total Rs. ${finalTotal.toLocaleString()} saved!`);
+      } catch {
+        toast.error('Failed to save calculation. Please try again.');
+      }
     } else {
       // Normal single-item calculation
-      addCalculation({
-        id: generateId(),
-        expression,
-        result: answer,
-        date: selectedDate,
-        time,
-        isSpecial: false,
-      });
-
-      setResult(String(answer));
-      setExpression('');
-
-      toast.success('Calculation saved!');
+      try {
+        await addCalculation({
+          expression,
+          result: answer,
+          date: selectedDate,
+          time,
+          isSpecial: false,
+        });
+        setResult(String(answer));
+        setExpression('');
+        toast.success('Calculation saved!');
+      } catch {
+        toast.error('Failed to save calculation. Please try again.');
+      }
     }
   };
 
