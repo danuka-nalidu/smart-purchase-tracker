@@ -1,6 +1,4 @@
-import { MongoClient } from "mongodb";
-
-let client: MongoClient;
+import mongoose from "mongoose";
 
 export const connectDB = async () => {
   try {
@@ -10,14 +8,10 @@ export const connectDB = async () => {
       throw new Error("MONGO_URI is not defined in environment variables");
     }
 
-    client = new MongoClient(uri);
-    await client.connect();
-
+    await mongoose.connect(uri);
     console.log("MongoDB Connected");
   } catch (error) {
     console.error("MongoDB connection failed:", error);
     process.exit(1);
   }
 };
-
-export const getClient = () => client;
