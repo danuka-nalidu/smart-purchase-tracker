@@ -1,16 +1,23 @@
-'use client';
+"use client";
 
-import { useCalculatorStore } from '@/store/useCalculatorStore';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import Link from 'next/link';
-import { format, parseISO } from 'date-fns';
-import { ArrowLeft, Trash2, Calendar, Star, Lock } from 'lucide-react';
-import { Calculation } from '@/lib/api';
-import { useEffect } from 'react';
-import { toast } from 'sonner';
-import { PasswordGate } from '@/components/PasswordGate';
-import { useOwnerAuth } from '@/store/useOwnerAuth';
+import { useCalculatorStore } from "@/store/useCalculatorStore";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import Link from "next/link";
+import { format, parseISO } from "date-fns";
+import {
+  ArrowLeft,
+  Trash2,
+  Calendar,
+  Star,
+  Lock,
+  Download,
+} from "lucide-react";
+import { Calculation } from "@/lib/api";
+import { useEffect } from "react";
+import { toast } from "sonner";
+import { PasswordGate } from "@/components/PasswordGate";
+import { useOwnerAuth } from "@/store/useOwnerAuth";
 
 export default function HistoryPage() {
   const calculations = useCalculatorStore((s) => s.calculations);
@@ -23,44 +30,90 @@ export default function HistoryPage() {
     fetchAll();
   }, [fetchAll]);
 
-  const formatter = new Intl.NumberFormat('en-LK', {
+  const formatter = new Intl.NumberFormat("en-LK", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });
 
   // Group calculations by date
-  const groupedCalculations = calculations.reduce((acc, calc) => {
-    if (!acc[calc.date]) {
-      acc[calc.date] = [];
-    }
-    acc[calc.date].push(calc);
-    return acc;
-  }, {} as Record<string, Calculation[]>);
+  const groupedCalculations = calculations.reduce(
+    (acc, calc) => {
+      if (!acc[calc.date]) {
+        acc[calc.date] = [];
+      }
+      acc[calc.date].push(calc);
+      return acc;
+    },
+    {} as Record<string, Calculation[]>,
+  );
 
   // Sort dates in descending order (newest first)
   const sortedDates = Object.keys(groupedCalculations).sort((a, b) =>
-    b.localeCompare(a)
+    b.localeCompare(a),
   );
 
   const formatDate = (dateString: string) => {
     try {
       const date = parseISO(dateString);
-      return format(date, 'EEEE, MMMM d, yyyy');
+      return format(date, "EEEE, MMMM d, yyyy");
     } catch {
       return dateString;
     }
   };
 
   const getDayTotal = (date: string) => {
-    return groupedCalculations[date].reduce((sum, calc) => sum + calc.result, 0);
+    return groupedCalculations[date].reduce(
+      (sum, calc) => sum + calc.result,
+      0,
+    );
+  };
+
+  const downloadDayPDF = async (date: string) => {
+    const { default: jsPDF } = await import("jspdf");
+    const { default: autoTable } = await import("jspdf-autotable");
+
+    const docPdf = new jsPDF();
+    const dayCalcs = groupedCalculations[date].slice().sort((a, b) => {
+      const [ah, am] = a.time.split(":").map(Number);
+      const [bh, bm] = b.time.split(":").map(Number);
+      return bh * 60 + bm - (ah * 60 + am);
+    });
+    const dayTotal = getDayTotal(date);
+
+    docPdf.setFontSize(18);
+    docPdf.text("Calculation History", 14, 18);
+    docPdf.setFontSize(12);
+    docPdf.text(formatDate(date), 14, 28);
+
+    autoTable(docPdf, {
+      startY: 34,
+      head: [["#", "Time", "Expression", "Amount (Rs.)"]],
+      body: dayCalcs.map((c, i) => [
+        i + 1,
+        c.time,
+        c.expression,
+        formatter.format(c.result),
+      ]),
+      foot: [["", "", "Daily Total", formatter.format(dayTotal)]],
+      headStyles: { fillColor: [22, 163, 74] },
+      footStyles: {
+        fillColor: [240, 253, 244],
+        textColor: [22, 163, 74],
+        fontStyle: "bold",
+      },
+      styles: { fontSize: 10 },
+      columnStyles: { 3: { halign: "right" } },
+    });
+
+    docPdf.save(`history-${date}.pdf`);
   };
 
   const handleDelete = async (id: string) => {
     try {
       await deleteCalculation(id);
-      toast.success('Calculation deleted');
+      toast.success("Calculation deleted");
     } catch {
-      toast.error('Failed to delete. Please try again.');
+      toast.error("Failed to delete. Please try again.");
     }
   };
 
@@ -85,7 +138,11 @@ export default function HistoryPage() {
               </p>
             </div>
             <Link href="/special-customers">
-              <Button size="lg" variant="outline" className="gap-2 bg-amber-50 border-amber-300 hover:bg-amber-100">
+              <Button
+                size="lg"
+                variant="outline"
+                className="gap-2 bg-amber-50 border-amber-300 hover:bg-amber-100"
+              >
                 <Star className="h-5 w-5 text-amber-500" />
                 <span className="hidden sm:inline">Special</span>
               </Button>
@@ -115,9 +172,7 @@ export default function HistoryPage() {
                     Start adding calculations to see them here
                   </p>
                   <Link href="/">
-                    <Button size="lg">
-                      Go to Calculator
-                    </Button>
+                    <Button size="lg">Go to Calculator</Button>
                   </Link>
                 </div>
               </CardContent>
@@ -138,14 +193,26 @@ export default function HistoryPage() {
                         {formatDate(date)}
                       </CardTitle>
                       <p className="text-sm text-slate-500 mt-1">
-                        {dayCalculations.length} calculation{dayCalculations.length !== 1 ? 's' : ''}
+                        {dayCalculations.length} calculation
+                        {dayCalculations.length !== 1 ? "s" : ""}
                       </p>
                     </div>
-                    <div className="text-right">
-                      <p className="text-sm text-slate-500">Daily Total</p>
-                      <p className="text-3xl font-bold text-green-600">
-                        {formatter.format(dayTotal)}
-                      </p>
+                    <div className="flex items-center gap-3">
+                      <div className="text-right">
+                        <p className="text-sm text-slate-500">Daily Total</p>
+                        <p className="text-3xl font-bold text-green-600">
+                          {formatter.format(dayTotal)}
+                        </p>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => downloadDayPDF(date)}
+                        className="gap-1.5 text-green-700 border-green-300 hover:bg-green-50"
+                        title="Download PDF"
+                      >
+                        <Download className="h-4 w-4" />
+                      </Button>
                     </div>
                   </div>
                 </CardHeader>
@@ -154,8 +221,8 @@ export default function HistoryPage() {
                     {dayCalculations
                       .sort((a, b) => {
                         // Sort by time, latest first
-                        const timeA = a.time.split(':').map(Number);
-                        const timeB = b.time.split(':').map(Number);
+                        const timeA = a.time.split(":").map(Number);
+                        const timeB = b.time.split(":").map(Number);
                         return (
                           timeB[0] * 60 + timeB[1] - (timeA[0] * 60 + timeA[1])
                         );
@@ -163,7 +230,11 @@ export default function HistoryPage() {
                       .map((calc) => (
                         <div
                           key={calc._id}
-                          className={calc.isSpecial ? "flex items-center justify-between p-4 bg-amber-50 rounded-lg hover:bg-amber-100 transition-colors border-l-4 border-amber-400" : "flex items-center justify-between p-4 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors"}
+                          className={
+                            calc.isSpecial
+                              ? "flex items-center justify-between p-4 bg-amber-50 rounded-lg hover:bg-amber-100 transition-colors border-l-4 border-amber-400"
+                              : "flex items-center justify-between p-4 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors"
+                          }
                         >
                           <div className="flex-1">
                             <div className="flex items-baseline gap-3">
